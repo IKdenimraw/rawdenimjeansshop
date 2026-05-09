@@ -154,6 +154,8 @@ var SP = [
 '',
 'Svar på det språket kunden bruker. Norsk til norske kunder, engelsk til engelskspråklige kunder.',
 '',
+'VIKTIG: Alle ordvalgsregler (sydd, vevd, vev, fades osv.) gjelder kun når du svarer på norsk. Når du svarer på engelsk, bruk korrekte engelske fagtermer gjennomgående. Bland aldri norske ord inn i engelske setninger.',
+'',
 '---',
 '',
 '## SELVEDGE — KORREKT FORKLARING',
@@ -482,4 +484,5 @@ function renderChips() {
   });
 }
 
-;
+setLang('no');
+console.log('RAW Denim chatbot loaded OK');
