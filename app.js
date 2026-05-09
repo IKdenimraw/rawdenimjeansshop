@@ -127,6 +127,38 @@ var SP = [
 '',
 'Bærekraft handler ikke om markedsføring — det handler om å kjøpe ett godt plagg i stedet for ti dårlige.',
 '',
+'',
+'## SLITASJE OG REPARASJON — VIKTIGE DEFINISJONER',
+'',
+'Skill alltid tydelig mellom:',
+'- **Slitasje i skrittet**: Denimen blir tynn, weft-trådene begynner å bli synlige. Dette er tidspunktet for sømforsterkning — kom til oss nå.',
+'- **Crotch blowout**: Hullet er så stort at det nesten er umulig å reparere uten ekstremt faglig sterk reparatørkompetanse med mange års erfaring. Unngå for enhver pris ved å komme tidlig.',
+'',
+'Aldri si at blowout kan repareres hos oss. Aldri nevn blowout i sammenheng med vanlig slitasje.',
+'',
+'---',
+'',
+'## FADES OG PASSFORM',
+'',
+'High contrast fades (honeycombs, whiskers) krever tett passform som rynker seg ved knær og hofte. På vide/baggy passformer er high contrast fades nesten umulig å oppnå. Man kan få tydelige pocket-merker og generelle fades på vide modeller, men ikke de skarpe kontrastene.',
+'',
+'---',
+'',
+'## TVETYDIG TERMINOLOGI',
+'',
+'Når kunden bruker generiske termer som "wide pant", "baggy" eller "vid jeans": presiser at du snakker generelt om vide passformer, ikke en spesifikk modell. Henvis til rawdenim.no/pages/fitguide for å se våre spesifikke modeller.',
+'',
+'---',
+'',
+'## SPRÅK',
+'',
+'Svar på det språket kunden bruker. Norsk til norske kunder, engelsk til engelskspråklige kunder.',
+'',
+'---',
+'',
+'## SELVEDGE — KORREKT FORKLARING',
+'',
+'Selvedge er et kvalitetstegn fordi denimen er vevd på tradisjonelle skyttelvevstoler (shuttle looms) i lavt tempo. Dette gir en tettere vev med mer karakter og naturlige ujevnheter. Jarekanten som låser seg selv er en konsekvens av teknikken — ikke årsaken til at det er høy kvalitet. Ikke si at overlock-kanter "rakner" — det er ikke et problem med vanlige jeans.',
 ''
 ].join('\n');
 
@@ -146,44 +178,50 @@ var sendBtn = document.getElementById('sendBtn');
 statusBar.style.display = 'none';
 
 function fmt(text) {
-  // Links: [text](url)
+  // Links first: [text](url)
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
   // Bold: **text**
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-  // Italic: *text* (not inside **)
-  text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-  // Headers
-  text = text.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
 
-  // Split into blocks
+  // Split into blocks on double newlines
   var blocks = text.split(/\n\n+/);
   var html = '';
+
   for (var i = 0; i < blocks.length; i++) {
     var block = blocks[i].trim();
     if (!block) continue;
 
-    // Check if block is a list
     var lines = block.split('\n');
+
+    // Check if all non-empty lines are bullet points
+    var bulletLines = [];
     var isList = true;
     for (var j = 0; j < lines.length; j++) {
-      if (lines[j].trim() && !lines[j].match(/^[\*\-] /)) {
-        isList = false; break;
+      var l = lines[j].trim();
+      if (!l) continue;
+      if (l.match(/^[\*\-] /)) {
+        bulletLines.push(l.replace(/^[\*\-] /, ''));
+      } else {
+        isList = false;
+        break;
       }
     }
 
-    if (isList && lines.length > 1) {
+    if (isList && bulletLines.length > 0) {
       html += '<ul>';
-      for (var k = 0; k < lines.length; k++) {
-        var li = lines[k].replace(/^[\*\-] /, '').trim();
-        if (li) html += '<li>' + li + '</li>';
+      for (var k = 0; k < bulletLines.length; k++) {
+        html += '<li>' + bulletLines[k] + '</li>';
       }
       html += '</ul>';
     } else {
-      // Regular paragraph - convert single newlines to br
-      block = block.replace(/\n/g, '<br>');
-      html += '<p>' + block + '</p>';
+      // Italic only in non-list paragraphs
+      var p = block.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+      p = p.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
+      p = p.replace(/\n/g, '<br>');
+      html += '<p>' + p + '</p>';
     }
   }
+
   return html || '<p>' + text + '</p>';
 }
 
@@ -354,18 +392,94 @@ chatInput.addEventListener('input', function() {
   this.style.height = Math.min(this.scrollHeight, 120) + 'px';
 });
 
-var chips = document.querySelectorAll('.chip');
-for (var i = 0; i < chips.length; i++) {
-  chips[i].addEventListener('click', function() {
-    doSend(this.textContent.trim());
+// Chips rendered by renderChips()
+renderChips();
+
+console.log('RAW Denim chatbot loaded OK')
+/* LANGUAGE */
+var currentLang = 'no';
+
+var i18n = {
+  no: {
+    aiLabel: 'AI-drevet',
+    navService: 'Kundeservice',
+    navGuide: 'Raw Denim Guiden',
+    eyebrow: 'Raw Denim Norway',
+    h1: 'Hva lurer<br>du på?',
+    p: 'Spør meg om raw denim, selvedge, passformer, vask eller produkter i butikken.',
+    placeholder: 'Still et spørsmål...',
+    send: 'Send →',
+    alsoAsk: 'Lurer du også på',
+    chips: [
+      'Hva er raw denim?',
+      'Hva er forskjellen på raw og vanlig denim?',
+      'Hvordan finner jeg min størrelse?',
+      'Hvordan vasker jeg jeans?',
+      'Hva koster frakt?',
+      'Hva er selvedge?'
+    ]
+  },
+  en: {
+    aiLabel: 'AI-powered',
+    navService: 'Customer Service',
+    navGuide: 'The Denim Guide',
+    eyebrow: 'Raw Denim Norway',
+    h1: 'What would you<br>like to know?',
+    p: 'Ask me about raw denim, selvedge, fit, washing or products in our store.',
+    placeholder: 'Ask a question...',
+    send: 'Send →',
+    alsoAsk: 'You might also wonder',
+    chips: [
+      'What is raw denim?',
+      'How is raw denim different from regular jeans?',
+      'How do I find my size?',
+      'How do I wash raw denim?',
+      'How much is shipping?',
+      'What is selvedge?'
+    ]
+  }
+};
+
+function setLang(lang) {
+  currentLang = lang;
+  var t = i18n[lang];
+
+  document.getElementById('btnNO').classList.toggle('active', lang === 'no');
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('aiLabel').textContent = t.aiLabel;
+  document.getElementById('navService').textContent = t.navService;
+  document.getElementById('navGuide').textContent = t.navGuide;
+  document.getElementById('welcomeEyebrow').textContent = t.eyebrow;
+  document.getElementById('welcomeH1').innerHTML = t.h1;
+  document.getElementById('welcomeP').textContent = t.p;
+  document.getElementById('welcomeInput').placeholder = t.placeholder;
+  document.getElementById('welcomeBtn').textContent = t.send;
+  document.getElementById('chatInput').placeholder = t.placeholder;
+  document.getElementById('sendBtn').textContent = t.send;
+  document.getElementById('alsoAskLabel').textContent = t.alsoAsk;
+
+  renderChips();
+}
+
+function renderChips() {
+  var t = i18n[currentLang];
+  var wc = document.getElementById('welcomeChips');
+  var ac = document.getElementById('alsoChips');
+  wc.innerHTML = '';
+  ac.innerHTML = '';
+  t.chips.forEach(function(q) {
+    var b1 = document.createElement('button');
+    b1.className = 'chip';
+    b1.textContent = q;
+    b1.addEventListener('click', function() { doSend(q); });
+    wc.appendChild(b1);
+
+    var b2 = document.createElement('button');
+    b2.className = 'also-chip';
+    b2.textContent = q;
+    b2.addEventListener('click', function() { doSend(q); });
+    ac.appendChild(b2);
   });
 }
 
-var alsoChips = document.querySelectorAll('.also-chip');
-for (var j = 0; j < alsoChips.length; j++) {
-  alsoChips[j].addEventListener('click', function() {
-    doSend(this.textContent.trim());
-  });
-}
-
-console.log('RAW Denim chatbot loaded OK');
+;
