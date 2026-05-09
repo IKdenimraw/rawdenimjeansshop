@@ -146,15 +146,30 @@ var sendBtn = document.getElementById('sendBtn');
 statusBar.style.display = 'none';
 
 function fmt(text) {
+  // Bold: **text**
+  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Italic: *text*
+  text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // Headers
+  text = text.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
+  // Links: [text](url)
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
+  // Bullet points: lines starting with * or -
+  text = text.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive li in ul
+  text = text.replace(/(<li>.*<\/li>\n?)+/g, function(m) { return '<ul>' + m + '</ul>'; });
+  // Split on double newlines for paragraphs
+  var parts = text.split('\n\n');
   var html = '';
-  var paragraphs = text.split('\n\n');
-  for (var i = 0; i < paragraphs.length; i++) {
-    var p = paragraphs[i].trim();
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i].trim();
     if (!p) continue;
-    p = p.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    p = p.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
-    p = p.replace(/\n/g, '<br>');
-    html += '<p>' + p + '</p>';
+    if (p.indexOf('<ul>') !== -1 || p.indexOf('<li>') !== -1) {
+      html += p;
+    } else {
+      p = p.replace(/\n/g, '<br>');
+      html += '<p>' + p + '</p>';
+    }
   }
   return html || '<p>' + text + '</p>';
 }
