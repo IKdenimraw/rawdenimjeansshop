@@ -1,10 +1,10 @@
 {
-  "functions": {
-    "api/chat.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
-  "rewrites": [
-    { "source": "/api/chat", "destination": "/api/chat.js" }
+  "version": 2,
+  "builds": [
+    { "src": "api/chat.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/chat", "dest": "/api/chat.js" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
