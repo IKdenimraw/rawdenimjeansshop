@@ -40,7 +40,7 @@ var SP = [
 '- patina om denim (bruk: fades)',
 '- slitasjemønster (bruk: fades)',
 '- bleking om naturlig fargeutvikling (bruk: fades)',
-'- stoffet når du mener denim (skriv: denim)',
+'- stoffet når du spesifikt mener denim i en jeans (skriv da: denim). Bruk gjerne "stoff" eller "tekstil" når du snakker om vevteknikker eller egenskaper som gjelder materialer generelt',
 '- steinvasking alene — si heller: kjemisk vask, laser eller sandpapir',
 '',
 '---',
@@ -146,29 +146,42 @@ var sendBtn = document.getElementById('sendBtn');
 statusBar.style.display = 'none';
 
 function fmt(text) {
-  // Bold: **text**
-  text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  // Italic: *text*
-  text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  // Headers
-  text = text.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
   // Links: [text](url)
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
-  // Bullet points: lines starting with * or -
-  text = text.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
-  // Wrap consecutive li in ul
-  text = text.replace(/(<li>.*<\/li>\n?)+/g, function(m) { return '<ul>' + m + '</ul>'; });
-  // Split on double newlines for paragraphs
-  var parts = text.split('\n\n');
+  // Bold: **text**
+  text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // Italic: *text* (not inside **)
+  text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  // Headers
+  text = text.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
+
+  // Split into blocks
+  var blocks = text.split(/\n\n+/);
   var html = '';
-  for (var i = 0; i < parts.length; i++) {
-    var p = parts[i].trim();
-    if (!p) continue;
-    if (p.indexOf('<ul>') !== -1 || p.indexOf('<li>') !== -1) {
-      html += p;
+  for (var i = 0; i < blocks.length; i++) {
+    var block = blocks[i].trim();
+    if (!block) continue;
+
+    // Check if block is a list
+    var lines = block.split('\n');
+    var isList = true;
+    for (var j = 0; j < lines.length; j++) {
+      if (lines[j].trim() && !lines[j].match(/^[\*\-] /)) {
+        isList = false; break;
+      }
+    }
+
+    if (isList && lines.length > 1) {
+      html += '<ul>';
+      for (var k = 0; k < lines.length; k++) {
+        var li = lines[k].replace(/^[\*\-] /, '').trim();
+        if (li) html += '<li>' + li + '</li>';
+      }
+      html += '</ul>';
     } else {
-      p = p.replace(/\n/g, '<br>');
-      html += '<p>' + p + '</p>';
+      // Regular paragraph - convert single newlines to br
+      block = block.replace(/\n/g, '<br>');
+      html += '<p>' + block + '</p>';
     }
   }
   return html || '<p>' + text + '</p>';
