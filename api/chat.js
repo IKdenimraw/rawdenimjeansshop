@@ -1,4 +1,4 @@
-module.exports = async function handler(req, res) {
+module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,35 +9,17 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({error: 'API key not configured'});
 
-  try {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:streamGenerateContent?alt=sse&key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=' + apiKey;
 
+  try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(req.body)
     });
-
-    if (!response.ok) {
-      const err = await response.json();
-      return res.status(response.status).json(err);
-    }
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const {done, value} = await reader.read();
-      if (done) break;
-      res.write(decoder.decode(value, {stream: true}));
-    }
-
-    res.end();
-  } catch (err) {
-    res.status(500).json({error: err.message});
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch(err) {
+    return res.status(500).json({error: err.message});
   }
 };
