@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -23,7 +23,6 @@ export default async function handler(req, res) {
       return res.status(response.status).json(err);
     }
 
-    // Stream response back to client
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -34,12 +33,11 @@ export default async function handler(req, res) {
     while (true) {
       const {done, value} = await reader.read();
       if (done) break;
-      const chunk = decoder.decode(value, {stream: true});
-      res.write(chunk);
+      res.write(decoder.decode(value, {stream: true}));
     }
 
     res.end();
   } catch (err) {
     res.status(500).json({error: err.message});
   }
-}
+};
