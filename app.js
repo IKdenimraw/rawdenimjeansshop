@@ -172,6 +172,7 @@ var SP = [
 ''
 ].join('\n');
 
+var API_URL = '/api/chat';
 var chatHistory = [];
 var busy = false;
 
