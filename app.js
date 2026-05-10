@@ -263,19 +263,19 @@ function fmt(text) {
       var l = lines[j].trim();
       if (!l) continue;
       if (l.match(/^[\*\-] /)) {
-        bulletLines.push(l.replace(/^[\*\-] /, ''));
-      } else if (l.match(/^\d+\. /)) {
-        bulletLines.push(l.replace(/^\d+\. /, ''));
+        bulletLines.push(l.replace(/^[\*\-] /, '').trim());
+      } else if (l.match(/^\d+[\.\)] /)) {
+        bulletLines.push(l.replace(/^\d+[\.\)] /, '').trim());
       } else {
         isList = false;
         break;
       }
     }
 
-    if (isList && bulletLines.length > 1) {
+    if (isList && bulletLines.length >= 1) {
       html += '<ul style="margin:8px 0 8px 18px;">';
       for (var k = 0; k < bulletLines.length; k++) {
-        html += '<li style="margin-bottom:6px;">' + bulletLines[k] + '</li>';
+        if (bulletLines[k]) html += '<li style="margin-bottom:5px;">' + bulletLines[k] + '</li>';
       }
       html += '</ul>';
     } else {
@@ -311,14 +311,14 @@ function addMsg(role, text) {
 }
 
 var typingMessages = [
-  'Søker i Raw Denim Guiden...',
-  'Sjekker produktdatabasen...',
-  'Grünerløkka-eksperten tenker...',
-  'Henter fra 10 års denimnerderi...',
-  'Vi holder til i Thorvald Meyers gate 50...',
-  'Åpent man-lør 11:30-18:00...',
-  'Følg oss på Instagram @rawdenimnorway...',
-  'Sjekker kunnskapsbasen...'
+  'Søker i Raw Denim Guiden',
+  'Sjekker produktdatabasen',
+  'Grünerløkka-eksperten tenker',
+  'Henter fra 10 års denimnerderi',
+  'Vi holder til i Thorvald Meyers gate 50',
+  'Åpent man-lør 11:30-18:00',
+  'Følg oss på Instagram @rawdenimnorway',
+  'Sjekker kunnskapsbasen'
 ];
 var typingInterval = null;
 
