@@ -210,6 +210,21 @@ var SP = [
 'Ikke gi råd om hvilken benlengde kunden bør velge — dette er for individuelt og avhenger av høyde, skosåle og preferanse. Henvis kunden til å komme innom butikken eller ta kontakt på kundeservice[a]rawdenim.no for personlig veiledning om lengde.',
 '',
 'Ikke anbefal cuff som standard løsning uten å kjenne kundens høyde og benlengde.',
+'',
+'---',
+'',
+'## FORMATERING AV SVAR',
+'',
+'Når du bruker bullet points, legg alltid en tom linje mellom introduksjonsteksten og første bullet point. Eksempel:',
+'',
+'Her er de to typene:',
+'',
+'* High contrast fades: dype kontraster',
+'* Vintage fades: jevnere uttrykk',
+'',
+'Ikke sett bullet points på samme linje som foregående tekst.',
+'',
+'Ikke nevn spesifikke modellnavn (Left Hand Twill, Elephant-serien osv.) med mindre kunden eksplisitt spør om en spesifikk modell. Henvis heller til nettbutikken.',
 ''
 ].join('\n');
 
@@ -230,49 +245,40 @@ var sendBtn = document.getElementById('sendBtn');
 statusBar.style.display = 'none';
 
 function fmt(text) {
-  // Links first: [text](url)
+  // Links: [text](url)
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color:inherit;text-decoration:underline;">$1</a>');
   // Bold: **text**
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
 
-  var blocks = text.split(/\n\n+/);
+  // Process line by line
+  var lines = text.split('\n');
   var html = '';
+  var inList = false;
 
-  for (var i = 0; i < blocks.length; i++) {
-    var block = blocks[i].trim();
-    if (!block) continue;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var trimmed = line.trim();
 
-    var lines = block.split('\n');
-    var bulletLines = [];
-    var isList = true;
-
-    for (var j = 0; j < lines.length; j++) {
-      var l = lines[j].trim();
-      if (!l) continue;
-      if (l.match(/^[\*\-] /)) {
-        bulletLines.push(l.replace(/^[\*\-] /, '').trim());
-      } else if (l.match(/^\d+[\.\)] /)) {
-        bulletLines.push(l.replace(/^\d+[\.\)] /, '').trim());
-      } else {
-        isList = false;
-        break;
-      }
+    if (!trimmed) {
+      if (inList) { html += '</ul>'; inList = false; }
+      continue;
     }
 
-    if (isList && bulletLines.length >= 1) {
-      html += '<ul style="margin:8px 0 8px 18px;">';
-      for (var k = 0; k < bulletLines.length; k++) {
-        if (bulletLines[k]) html += '<li style="margin-bottom:5px;">' + bulletLines[k] + '</li>';
-      }
-      html += '</ul>';
+    var bulletMatch = trimmed.match(/^[\*\-]\s+(.*)/);
+    var numberedMatch = trimmed.match(/^\d+[\.\)]\s+(.*)/);
+
+    if (bulletMatch || numberedMatch) {
+      if (!inList) { html += '<ul style="margin:8px 0 8px 18px;">'; inList = true; }
+      html += '<li style="margin-bottom:5px;">' + (bulletMatch ? bulletMatch[1] : numberedMatch[1]) + '</li>';
     } else {
-      var p = block.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-      p = p.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>');
-      p = p.replace(/\n/g, '<br>');
+      if (inList) { html += '</ul>'; inList = false; }
+      var p = trimmed.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      p = p.replace(/^#{1,3}\s+(.+)$/, '<strong>$1</strong>');
       html += '<p>' + p + '</p>';
     }
   }
 
+  if (inList) html += '</ul>';
   return html || '<p>' + text + '</p>';
 }
 
